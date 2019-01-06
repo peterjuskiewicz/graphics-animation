@@ -15,10 +15,318 @@
 #include <GLUT/glut.h>
 
 
-#define RAINSIZE 500
+
+
 
 //this defines a constant for the array size
 #define SPRAYSIZE 500
+
+// the properties of a spray particle are defined in a struct
+struct sprayParticle {
+    float x = 0; // current position  x
+    float y = 0; // current position  y
+    float startx = 0; // birth position  x
+    float starty = 0; // birth position y
+    int startTime; // a birthtime in frames when it will be born
+    int startRange = 10000; // the maximum time at which a birth can happen
+    bool started = false; // tracks whether the particle has benn born or not
+    float speed = 0.8;
+    float radius;
+    float startxd = 0; // starting direction vector x value
+    float startyd = 0; // startingdirection vestor y value
+    float xd = 0;  //  current direction vector x value
+    float yd = 0;  // current direction vector x value
+    float alpha = 1.0; // transparency
+    float fr = 0.5+(float)(rand() % 500) / 1000.0;
+    float fg = 0.5+(float)(rand() % 500) / 1000.0;
+    float fb = 0.5+(float)(rand() % 500) / 1000.0;
+};
+
+int winWidth = 1000, winHeight = 1000;
+int counter = 0;
+
+
+sprayParticle spray[SPRAYSIZE];
+//float angle = 180;
+
+
+float angle = 360; // the angle of the spray: 0 degrees is to the left,
+// 90 degrees straight up, 180 to the right etc
+float sprayWidth = 4;// the width of the spray in degrees
+float sprayCenterX, sprayCenterY;
+
+
+// the gravity vector
+float gx = 0;
+float gy = -0.11025;
+
+// the position of thepartcle ystem emitter, wher the rocket should be drawn
+float rocketstartx =  300, rocketstarty = 500;;
+
+void circle(double radius, double xc, double yc)
+{
+    int i;
+    double angle = 2 * 3.1415 / 20;    // circle is drawn using 20 line.
+    double circle_xy[40][2];
+
+    circle_xy[0][0] = radius + xc;
+    circle_xy[0][1] = yc;
+    //glBegin(GL_LINE_LOOP);
+    glBegin(GL_POLYGON);
+    for (i = 1; i<20; i++)
+    {
+        circle_xy[i][0] = radius * cos(i *angle) + xc;
+        circle_xy[i][1] = radius * sin(i * angle) + yc;
+
+        glVertex2f(circle_xy[i - 1][0], circle_xy[i - 1][1]);
+        glVertex2f(circle_xy[i][0], circle_xy[i][1]);
+    }
+    glEnd();
+}
+void circlePolygon(double radius, double xc, double yc)
+{
+    int i;
+    double angle = 2 * 3.1415 / 20;    // circle is drawn using 20 line.
+    double circle_xy[40][2];
+
+    circle_xy[0][0] = radius + xc;
+    circle_xy[0][1] = yc;
+    //glBegin(GL_LINE_LOOP);
+    glBegin(GL_POLYGON);
+    for (i = 1; i<20; i++)
+    {
+        circle_xy[i][0] = radius * cos(i *angle) + xc;
+        circle_xy[i][1] = radius * sin(i * angle) + yc;
+
+        glVertex2f(circle_xy[i - 1][0], circle_xy[i - 1][1]);
+        glVertex2f(circle_xy[i][0], circle_xy[i][1]);
+    }
+    glEnd();
+}
+
+// the normalise function takes a vector and adjusts its length to be 1
+void normalise(int i)
+{
+    float mag;
+    mag = sqrt((spray[i].xd*spray[i].xd) + (spray[i].yd*spray[i].yd));
+    spray[i].xd = spray[i].xd / mag;
+    spray[i].yd = spray[i].yd / mag;
+}
+// we calculate the direction vector of the current particle from the global variable angle and spread
+void setDirectionVector(int i)
+{
+    float minAngle, maxAngle, range, newangle;
+    double newAngleInRadians; // variable
+    int rangeInt;
+    minAngle = angle - (sprayWidth / 2.0); // calc the minimum angle the particle could move along
+    maxAngle = angle + (sprayWidth / 2.0); // calc the maximum angle
+    range = maxAngle - minAngle;
+    rangeInt = (int)(range*100.0);
+    newangle = minAngle + ((float)(rand() % rangeInt) / 100.0); // generate a random angle between mi and max angles
+    newAngleInRadians = (double)(newangle / 360.0)*(2 * 3.1415); // convert it to radians
+
+    spray[i].xd = (float)cos(newAngleInRadians);// calc the diection vector x value
+    spray[i].yd = (float)sin(newAngleInRadians);// calc the diection vector y value
+
+}
+
+void initspray()
+{
+    for (int i = 0; i < SPRAYSIZE; i++) {
+        spray[i].x = rocketstartx; // set current start x position
+        spray[i].y = rocketstarty; // set current start y position
+        //spray[i].x = winWidth/2; // set current start x position
+        //spray[i].y = 100;// set current start y position
+        spray[i].startx = spray[i].x; spray[i].starty = spray[i].y;// set start x and y position
+        spray[i].speed = 0.1 + (float)(rand() % 150) / 1000.0;// speed is 0.1 to 0.25
+        spray[i].startTime = rand() % spray[i].startRange;// set birth time
+        spray[i].radius = (float)(rand() % 5); // random radius
+        setDirectionVector(i);// set the current direction vector
+        spray[i].startxd = spray[i].xd; spray[i].startyd = spray[i].yd; // set start direction vector to current
+    }
+}
+
+
+void drawsprayParticle(int i)
+{
+    glLineWidth(2);
+    if (!spray[i].started) {
+        if (counter == spray[i].startTime) {
+            spray[i].started = true;
+            spray[i].x = rocketstartx;
+
+        }
+    }
+    if (spray[i].started)
+    {
+        glColor4f(spray[i].fr, spray[i].fg, spray[i].fb, spray[i].alpha);
+
+        circle(spray[i].radius, spray[i].x, spray[i].y);
+        //glBegin(GL_LINES);
+        //glVertex2f(spray[i].x, spray[i].y);
+        //glVertex2f(spray[i].x + spray[i].xd * 10, spray[i].y + spray[i].yd * 10);
+        //glEnd();
+        // update particile movement based on its speed (speed) and its direction vector
+        spray[i].x = spray[i].x + (spray[i].xd*spray[i].speed);
+        spray[i].y = spray[i].y + (spray[i].yd*spray[i].speed);
+        // add gravity
+        // this then  produces a direction vector that is a little longer than 1
+        spray[i].yd = spray[i].yd + gy;
+        // so the normalise the vector to make length 1
+//        normalise(i);
+        // reduce transparency
+        spray[i].alpha -= 0.01015;
+
+        if(spray[i].y < 200) {
+            spray[i].started = false;
+        }
+    }
+//    if (spray[i].x<0 || spray[i].x>winWidth + 500 || spray[i].y<0 || spray[i].y>winHeight)
+//    {
+//        //spray[i].x = spray[i].startx; spray[i].y = spray[i].starty; //rocketstartx
+//        spray[i].x = rocketstartx; spray[i].y = rocketstarty;
+//        spray[i].xd = spray[i].startxd; spray[i].yd = spray[i].startyd;
+//        spray[i].alpha = 1.0;
+//    }
+
+}
+
+
+void drawspray()
+{
+    // draw each spray particle
+    for (int i = 0; i < SPRAYSIZE; i++)
+    {
+        drawsprayParticle(i);
+    }
+
+    // increment rocket position
+    rocketstarty -= 10.2;
+    // if the rocket is oof the screen more nad 500 pixels to the right the rest it to 0
+    if (rocketstarty > 100) { rocketstarty = 0; }
+
+    counter++;
+}
+
+
+
+
+//****** FIREWORKS
+
+#define FIREWORKSIZE 500
+
+float fireworkCenterX, fireworkCenterY;
+//variables for firework colour, set once per firework
+float fr = 1; float fg = 1;  float fb = 1;
+
+// the properties of a fire particle are defined in a struct
+struct fireParticle {
+    float x = 0; // position in x
+    float y = 0; // position in y
+    float inc = 0.1;
+    float radius;
+    float xd = 0; //direction in x
+    float yd = 0; //direction in y
+};
+
+time_t t;
+
+fireParticle firework[FIREWORKSIZE];
+
+// a direction vector needs to have a length of one
+// mathematically this means (x*x)+(y*y) = sqrt(1) ie 1
+// so we set the x component to a random number between 0 and 1
+// and thne calculate the y value accordingly. ie y=sqrt(1-(x*x))
+// We then set x and y to be negative aprroximately %50 of the time to cover direction in 360 degrees
+void setFireworkDirectionVector(int i)
+{
+    firework[i].xd = (float)((rand() % 1000) + 1) / 1000.0;
+    firework[i].yd = sqrt(1.0 - (firework[i].xd*firework[i].xd));
+    if (rand() % 1000 < 500) firework[i].xd = -firework[i].xd;
+    if (rand() % 1000 < 500) firework[i].yd = -firework[i].yd;
+}
+
+void initFirework()
+{
+
+    for (int i = 0; i < FIREWORKSIZE; i++) {
+
+        firework[i].x = 250;
+        firework[i].y = 240;
+        firework[i].inc = 3.01 + (float)(rand() % 150) / 1000.0;
+        firework[i].radius = (float)(rand() % 15);
+        setFireworkDirectionVector(i);
+    }
+    // set fireowrk centre
+//    fireworkCenterX = rand() % (int)winWidth;
+//    fireworkCenterY = rand() % (int)winHeight;
+
+    fr = (float)(rand() % 1000) / 1000.0;
+    fg = (float)(rand() % 1000) / 1000.0;
+    fb = (float)(rand() % 1000) / 1000.0;
+}
+void drawFireworkParticleShape(int i)
+{
+    circle(firework[i].radius, firework[i].x, firework[i].y);
+    glBegin(GL_LINES);
+    glVertex2d(firework[i].x, firework[i].y);
+    glVertex2d(firework[i].x + firework[i].xd * 1, firework[i].y + firework[i].yd * 1);
+    glEnd();
+    //glBegin(GL_LINES);
+    //glVertex2d(firework[i].x, firework[i].y);
+    //glVertex2d(firework[i].x + firework[i].xd * 20, firework[i].y + firework[i].yd * 20);
+    //glEnd();
+}
+
+void drawFireParticle(int i)
+{
+    glColor3f(fr, fg, fb);
+    glLineWidth(2);
+
+    drawFireworkParticleShape(i);
+    // update partcile movement based on its speed (inc) and its direction vector
+    firework[i].x = firework[i].x + (firework[i].xd*firework[i].inc);
+    firework[i].y = firework[i].y + (firework[i].yd*firework[i].inc);
+
+}
+
+void drawFirework()
+{
+    // draw each fire particle
+    for (int i = 0; i < FIREWORKSIZE; i++)
+    {
+        drawFireParticle(i);
+    }
+    //start a firework in a new position every so often randomly
+    if (rand() % 2000 < 1) {
+        fireworkCenterX = rand() % (int) winWidth;
+        fireworkCenterY = rand() % (int) winHeight;
+        initFirework();
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// define size of rain array
+#define RAINSIZE 500
+
+
+
+
 
 int scene = 1;
 
@@ -41,8 +349,8 @@ float coloursArr[10][3] = {
 
 
 
-int winWidth = 1000, winHeight = 1000;
-int counter = 0;
+
+//int counter = 0;
 
 
 
@@ -58,32 +366,13 @@ float rotAngle = 60;
 bool goingClockwise = false;
 
 
-time_t t;
+
 
 
 
 
 int frame=0;
 
-
-
-// the properties of a spray particle are defined in a struct
-struct sprayParticle {
-    float x = 0; // current position  x
-    float y = 0; // current position  y
-    float startx = 0; // birth position  x
-    float starty = 0; // birth position y
-    int startTime; // a birthtime in frames when it will be born
-    int startRange = 10000; // the maximum time at which a birth can happen
-    bool started = false; // tracks whether the particle has benn born or not
-    float speed = 0.1;
-    float radius;
-    float startxd = 0; // starting direction vector x value
-    float startyd = 0; // startingdirection vestor y value
-    float xd = 0;  //  current direction vector x value
-    float yd = 0;  // current direction vector x value
-    float alpha = 1.0; // transparency
-};
 
 
 
@@ -109,7 +398,7 @@ struct drop {
 
 drop rain[RAINSIZE];
 
-sprayParticle spray[SPRAYSIZE];
+
 
 void initRain()
 {
@@ -165,20 +454,7 @@ void drawRain()
     }
 }
 
-float elapsedTime = 0, base_time = 0, fps = 0, frames;
 
-void calcFPS()
-{
-    elapsedTime = glutGet(GLUT_ELAPSED_TIME);
-    if ((elapsedTime - base_time) > 1000.0)
-    {
-        fps = frames*1000.0 / (elapsedTime - base_time);
-        printf("fps: %f", fps);
-        base_time = elapsedTime;
-        frames = 0;
-    }
-    frames++;
-}
 
 
 
@@ -270,6 +546,10 @@ void drawHand(int x, int y, float humanX, float humanY) {
     glVertex2i(x - 10 + humanX, y - 110 + humanY);
     glEnd();
 
+
+//    rocketstartx = x - 10 + humanX;
+//    rocketstarty = y - 150 + humanY;
+
 }
 
 
@@ -326,6 +606,7 @@ void rotateHand() {
 
             drawHand(0, 0, 0, 0);
 
+
 //            glTranslatef(-800 - humanX, -500 - humanY, 0.0);
 
             glPopMatrix();
@@ -333,21 +614,21 @@ void rotateHand() {
 
 
     if(rotateDirection == 1) {
-        fRotate1--;
-        if(fRotate1 < -130.0){
+        fRotate1 = fRotate1 -5;
+        if(fRotate1 < -100.0){
             rotateDirection = 0;
         }
     }
 
     if(rotateDirection == 0) {
-        fRotate1 = fRotate1 + 2;
+        fRotate1 = fRotate1 + 5;
         if(fRotate1 > -90) {
             rotateDirection = 1;
         }
     }
 
     if(rotateDirection == -1) {
-        fRotate1 = fRotate1 + 1;
+        fRotate1 = fRotate1 + 5;
 
         if(fRotate1 > 0.0){
             rotateDirection = -2;
@@ -360,7 +641,9 @@ void rotateHand() {
 
 void drawWindow() {
 
-    glColor3f(1.0, 0.0, 1.0);
+    glColor3f(0.5, 0.5, 0.5);
+    glLineWidth(15.0);
+
 
     glBegin(GL_LINE_STRIP);
     glVertex2i(0, 0);
@@ -599,7 +882,6 @@ void display1() {
     glColor3f(1.0, 1.0, 1.0); // set colour to white
     drawRain();
     drawWindow();
-    calcFPS();
     glFlush(); // force all drawing to finish
     counter++;
 
@@ -621,6 +903,8 @@ void display(void)
         glViewport(0,0,1300,1000);
 
         drawAquarium();
+
+
 //
 //        glPushMatrix();
 //        glTranslatef(fTranslate,0.0f,0.0);
@@ -645,6 +929,7 @@ void display(void)
         glPopMatrix();
 
         humanX -= 1.0;
+
 
 
 
@@ -687,7 +972,7 @@ void display(void)
             drawFish();
             glPopMatrix();
             rotateHand();
-
+            drawspray();
             if(up == 1) fTranslateY += 2.0;
             if(down == 1) fTranslateY -= 2.0;
             if(fTranslateY == 70.0f) {down = 1; up = 0;}
@@ -727,7 +1012,19 @@ void display(void)
     }
 
     if(scene == 4) {
-         renderSpacedBitmapString(50,400,GLUT_BITMAP_HELVETICA_18,"1st Scene");
+
+        display1();
+
+        glViewport(0,0,1300,1000);
+
+        drawAquarium();
+        drawHuman();
+        drawLamp();
+        drawFirework();
+
+
+
+         renderSpacedBitmapString(600,800,GLUT_BITMAP_HELVETICA_18,"1st Scene");
     }
 
     fprintf(stdout,"Right number= %i\n", right);
@@ -804,6 +1101,8 @@ int main(int argc, char** argv)
 {
     srand(1);
     initRain();
+    initspray();
+    initFirework();
     glutInit(&argc, argv);
     glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGB);
     glutInitWindowSize (1300, 1000);
