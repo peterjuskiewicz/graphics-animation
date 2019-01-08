@@ -14,14 +14,13 @@
 #include <OpenGL/glu.h>
 #include <GLUT/glut.h>
 
+int winWidth = 1000, winHeight = 1000;
 
+// Spray
 
-
-
-//this defines a constant for the array size
 #define SPRAYSIZE 500
 
-// the properties of a spray particle are defined in a struct
+// Struct used to define spray particle
 struct sprayParticle {
     float x = 0; // current position  x
     float y = 0; // current position  y
@@ -42,13 +41,10 @@ struct sprayParticle {
     float fb = 0.5+(float)(rand() % 500) / 1000.0;
 };
 
-int winWidth = 1000, winHeight = 1000;
+
 int counter = 0;
 
-
 sprayParticle spray[SPRAYSIZE];
-//float angle = 180;
-
 
 float angle = 360; // the angle of the spray: 0 degrees is to the left,
 // 90 degrees straight up, 180 to the right etc
@@ -61,7 +57,7 @@ float gx = 0;
 float gy = -0.11025;
 
 // the position of thepartcle ystem emitter, wher the rocket should be drawn
-float rocketstartx =  300, rocketstarty = 500;;
+float spraystartx =  250, spraystarty = 500;;
 
 void circle(double radius, double xc, double yc)
 {
@@ -104,14 +100,6 @@ void circlePolygon(double radius, double xc, double yc)
     glEnd();
 }
 
-// the normalise function takes a vector and adjusts its length to be 1
-void normalise(int i)
-{
-    float mag;
-    mag = sqrt((spray[i].xd*spray[i].xd) + (spray[i].yd*spray[i].yd));
-    spray[i].xd = spray[i].xd / mag;
-    spray[i].yd = spray[i].yd / mag;
-}
 // we calculate the direction vector of the current particle from the global variable angle and spread
 void setDirectionVector(int i)
 {
@@ -133,8 +121,8 @@ void setDirectionVector(int i)
 void initspray()
 {
     for (int i = 0; i < SPRAYSIZE; i++) {
-        spray[i].x = rocketstartx; // set current start x position
-        spray[i].y = rocketstarty; // set current start y position
+        spray[i].x = spraystartx; // set current start x position
+        spray[i].y = spraystarty; // set current start y position
         //spray[i].x = winWidth/2; // set current start x position
         //spray[i].y = 100;// set current start y position
         spray[i].startx = spray[i].x; spray[i].starty = spray[i].y;// set start x and y position
@@ -153,7 +141,7 @@ void drawsprayParticle(int i)
     if (!spray[i].started) {
         if (counter == spray[i].startTime) {
             spray[i].started = true;
-            spray[i].x = rocketstartx;
+            spray[i].x = spraystartx;
 
         }
     }
@@ -162,10 +150,6 @@ void drawsprayParticle(int i)
         glColor4f(spray[i].fr, spray[i].fg, spray[i].fb, spray[i].alpha);
 
         circle(spray[i].radius, spray[i].x, spray[i].y);
-        //glBegin(GL_LINES);
-        //glVertex2f(spray[i].x, spray[i].y);
-        //glVertex2f(spray[i].x + spray[i].xd * 10, spray[i].y + spray[i].yd * 10);
-        //glEnd();
         // update particile movement based on its speed (speed) and its direction vector
         spray[i].x = spray[i].x + (spray[i].xd*spray[i].speed);
         spray[i].y = spray[i].y + (spray[i].yd*spray[i].speed);
@@ -181,13 +165,6 @@ void drawsprayParticle(int i)
             spray[i].started = false;
         }
     }
-//    if (spray[i].x<0 || spray[i].x>winWidth + 500 || spray[i].y<0 || spray[i].y>winHeight)
-//    {
-//        //spray[i].x = spray[i].startx; spray[i].y = spray[i].starty; //rocketstartx
-//        spray[i].x = rocketstartx; spray[i].y = rocketstarty;
-//        spray[i].xd = spray[i].startxd; spray[i].yd = spray[i].startyd;
-//        spray[i].alpha = 1.0;
-//    }
 
 }
 
@@ -200,10 +177,11 @@ void drawspray()
         drawsprayParticle(i);
     }
 
-    // increment rocket position
-    rocketstarty -= 10.2;
-    // if the rocket is oof the screen more nad 500 pixels to the right the rest it to 0
-    if (rocketstarty > 100) { rocketstarty = 0; }
+    // increment spray position
+    spraystarty -= 10.2;
+
+    // if the particle
+    if (spraystarty > 100) { spraystarty = 0; }
 
     counter++;
 }
@@ -347,39 +325,13 @@ float coloursArr[10][3] = {
 };
 
 
-
-
-
-//int counter = 0;
-
-
-
-
-
-
-
-
-
-
 float waveAngle = 0.0; float waveInc = 5.0;
 float rotAngle = 60;
 bool goingClockwise = false;
 
 
-
-
-
-
-
 int frame=0;
 
-
-
-
-class wcPt2D{
-public:
-    float x, y;
-};
 
 // Rain functions
 
@@ -402,8 +354,6 @@ drop rain[RAINSIZE];
 
 void initRain()
 {
-
-    //    srand((unsigned)time(&t));
     for (int i = 0; i < RAINSIZE; i++) {
         rain[i].x = rand() % winWidth - 20;
         rain[i].y = rand() % winHeight;
@@ -412,7 +362,6 @@ void initRain()
         rain[i].g = (float)(rand() % 1000) / 1000.0;
         rain[i].b = (float)(rand() % 1000) / 1000.0;
         rain[i].a = 0.5;
-        //rain[i].radius = (float)(rand() % 15);
         rain[i].scale = (float)(rand() % 20000) / 1000.0;
         rain[i].rotationAngle = (float)(rand() % 3000) / 1000.0;
         rain[i].rotationInc = (float)(rand() % 100) / 1000.0;
@@ -435,8 +384,6 @@ void drawParticleShape(int i)
 
 void drawDrop(int i)
 {
-    //glColor3f(rain[i].r, rain[i].g, rain[i].b);
-
     glLineWidth(2);
 
     drawParticleShape(i);
@@ -453,10 +400,6 @@ void drawRain()
         drawDrop(i);
     }
 }
-
-
-
-
 
 
 
@@ -535,25 +478,17 @@ void drawHand(int x, int y, float humanX, float humanY) {
 
     glBegin(GL_LINES);
     glVertex2i(x + humanX, y + humanY);
-    glVertex2i(x + humanX, y - 150 + humanY);
+    glVertex2i(x + humanX, y - 180 + humanY);
     glEnd();
 
     glBegin(GL_POLYGON);
-    glVertex2i(x - 10 + humanX, y - 150 + humanY);
-    glVertex2i(x + 10 + humanX, y - 150 + humanY);
-    glVertex2i(x + 10 + humanX, y - 210 + humanY);
-    glVertex2i(x - 10 + humanX, y - 210 + humanY);
+    glVertex2i(x - 10 + humanX, y - 180 + humanY);
+    glVertex2i(x + 10 + humanX, y - 180 + humanY);
+    glVertex2i(x + 10 + humanX, y - 250 + humanY);
+    glVertex2i(x - 10 + humanX, y - 250 + humanY);
     glVertex2i(x - 10 + humanX, y - 110 + humanY);
     glEnd();
-
-
-//    rocketstartx = x - 10 + humanX;
-//    rocketstarty = y - 150 + humanY;
-
 }
-
-
-
 
 
 void drawHuman() {
@@ -593,25 +528,13 @@ void drawHuman() {
 }
 
 
-
-
-
 void rotateHand() {
 
-            glPushMatrix();
-
-            glTranslatef(800 + humanX, 500 + humanY,0.0);
-
-            glRotatef(fRotate1, 0,0,1);
-
-            drawHand(0, 0, 0, 0);
-
-
-//            glTranslatef(-800 - humanX, -500 - humanY, 0.0);
-
-            glPopMatrix();
-
-
+    glPushMatrix();
+    glTranslatef(800 + humanX, 500 + humanY,0.0);
+    glRotatef(fRotate1, 0,0,1);
+    drawHand(0, 0, 0, 0);
+    glPopMatrix();
 
     if(rotateDirection == 1) {
         fRotate1 = fRotate1 -5;
@@ -629,13 +552,10 @@ void rotateHand() {
 
     if(rotateDirection == -1) {
         fRotate1 = fRotate1 + 5;
-
         if(fRotate1 > 0.0){
             rotateDirection = -2;
         }
     }
-
-
 }
 
 
@@ -643,7 +563,6 @@ void drawWindow() {
 
     glColor3f(0.5, 0.5, 0.5);
     glLineWidth(15.0);
-
 
     glBegin(GL_LINE_STRIP);
     glVertex2i(0, 0);
@@ -656,31 +575,15 @@ void drawWindow() {
 }
 
 
+// Morphing
 
-
-
-
-
-
-
-
+class wcPt2D{
+public:
+    float x, y;
+};
 
 wcPt2D tweenPoly[20];
 float proportion =0.0;
-
-
-
-
-
-float  fRotate    = 0.0;       // Speed Of The Rotation
-float fScale     = 0.0;     // Speed Of The Scaling
-
-
-
-
-
-
-int mode;
 
 void tween(wcPt2D source[20], wcPt2D destination[20], int numPoints, double proportion, wcPt2D tweenPoly[20])
 {
@@ -776,9 +679,6 @@ void move_fish() {
 
         }
 
-
-
-
         if(left) {
             fTranslate -= 10.0;
 
@@ -800,29 +700,17 @@ void move_fish() {
             rotateFish = true;
             left = false; right = true;
         }
-
-
-
     }
 
     if(rotateFish){
 
-
         fishRotate = fishRotate + 10;
 
         glPushMatrix();
-
         glTranslatef(fTranslate + fish[4].x, 240, 0.0);
-
         glRotatef(fishRotate, 0,0,1);
-
-
         drawFish();
-
-        //            glTranslatef(-800 - humanX, -500 - humanY, 0.0);
-
         glPopMatrix();
-
 
         if(fishRotate == 180.0 || fishRotate == 360) {
 
@@ -883,7 +771,6 @@ void display1() {
     drawRain();
     drawWindow();
     glFlush(); // force all drawing to finish
-    counter++;
 
 }
 
@@ -903,38 +790,12 @@ void display(void)
         glViewport(0,0,1300,1000);
 
         drawAquarium();
-
-
-//
-//        glPushMatrix();
-//        glTranslatef(fTranslate,0.0f,0.0);
-//        drawFish();;
-//        glPopMatrix();
-
         move_fish();
-
-
-
         drawHuman();
         drawHand(800, 500, humanX, humanY);
         drawLamp();
-
-//        glPushMatrix();
-//        //glTranslatef(75, 75,-5.0f);
-//        glTranslatef(100,200,0.0);
-//        glRotatef(fRotate, 1,0,0);    // rotate around Z axis and the centre of the project.
-//        drawFish();
-
-
         glPopMatrix();
-
         humanX -= 1.0;
-
-
-
-
-
-
 
         if(humanX == -300) {
             scene = 2;
@@ -1019,36 +880,14 @@ void display(void)
 
         drawAquarium();
         drawHuman();
+        drawHand(800, 500, humanX, humanY);
         drawLamp();
         drawFirework();
 
-
-
-         renderSpacedBitmapString(600,800,GLUT_BITMAP_HELVETICA_18,"1st Scene");
+         renderSpacedBitmapString(600,800,GLUT_BITMAP_HELVETICA_18,"THE BEST FISH FOOD IN THE WORLD");
     }
 
     fprintf(stdout,"Right number= %i\n", right);
-
-
-
-
-//    if(right == 1) fTranslate += 2.0;
-//    if(left == 1) fTranslate -= 2.0;
-//    if(fTranslate == 200.0f) {left = 1; right = 0;}
-//    if(fTranslate == 0.0f) { left = 0; right = 1;}
-
-
-
-
-    fRotate    += 5.0f;       // Speed Of The Rotation
-    fScale     += 0.005f;
-
-
-
-
-
-    if(fScale < 0.5f)     fScale     = 1.0f;   // Reset Scaling to 1.0f
-    //if(fRotate>45.0f) fRotate=0.0f;
 
     glutSwapBuffers();
     glFlush ();
@@ -1080,7 +919,7 @@ void visibility(int state)
 void init (void)
 {
     /* select clearing color     */
-    glClearColor (1.0, 1.0, 1.0, 1.0);
+    glClearColor (0.9, 0.9, 0.9, 0.9);
 
     /* initialize viewing values  */
     glMatrixMode(GL_PROJECTION);
