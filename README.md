@@ -33,6 +33,10 @@ The animation uses double buffering by adding glutSwapBuffers at the end of the 
 
 I've used renderSpacedBitmapString method to draw the final ad message on the display
 
+## Animation time
+
+The animation time is approximately 45 seconds.
+
 ## Misc
 
 The lightbulb is changing colours giving flashing effect, array has been use to store the values of colours.
