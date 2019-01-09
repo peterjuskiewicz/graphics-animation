@@ -14,11 +14,16 @@
 #include <OpenGL/glu.h>
 #include <GLUT/glut.h>
 
+// Global variables
+
 int winWidth = 1000, winHeight = 1000;
+int scene = 1;
+int counter = 0;
 
-// Spray
 
-#define SPRAYSIZE 500
+//SPRAY
+
+#define SPRAYSIZE 1500
 
 // Struct used to define spray particle
 struct sprayParticle {
@@ -42,7 +47,7 @@ struct sprayParticle {
 };
 
 
-int counter = 0;
+
 
 sprayParticle spray[SPRAYSIZE];
 
@@ -87,7 +92,6 @@ void circlePolygon(double radius, double xc, double yc)
 
     circle_xy[0][0] = radius + xc;
     circle_xy[0][1] = yc;
-    //glBegin(GL_LINE_LOOP);
     glBegin(GL_POLYGON);
     for (i = 1; i<20; i++)
     {
@@ -104,7 +108,7 @@ void circlePolygon(double radius, double xc, double yc)
 void setDirectionVector(int i)
 {
     float minAngle, maxAngle, range, newangle;
-    double newAngleInRadians; // variable
+    double newAngleInRadians;
     int rangeInt;
     minAngle = angle - (sprayWidth / 2.0); // calc the minimum angle the particle could move along
     maxAngle = angle + (sprayWidth / 2.0); // calc the maximum angle
@@ -123,8 +127,6 @@ void initspray()
     for (int i = 0; i < SPRAYSIZE; i++) {
         spray[i].x = spraystartx; // set current start x position
         spray[i].y = spraystarty; // set current start y position
-        //spray[i].x = winWidth/2; // set current start x position
-        //spray[i].y = 100;// set current start y position
         spray[i].startx = spray[i].x; spray[i].starty = spray[i].y;// set start x and y position
         spray[i].speed = 0.1 + (float)(rand() % 150) / 1000.0;// speed is 0.1 to 0.25
         spray[i].startTime = rand() % spray[i].startRange;// set birth time
@@ -187,9 +189,7 @@ void drawspray()
 }
 
 
-
-
-//****** FIREWORKS
+// EXPLOSION
 
 #define FIREWORKSIZE 500
 
@@ -211,11 +211,6 @@ time_t t;
 
 fireParticle firework[FIREWORKSIZE];
 
-// a direction vector needs to have a length of one
-// mathematically this means (x*x)+(y*y) = sqrt(1) ie 1
-// so we set the x component to a random number between 0 and 1
-// and thne calculate the y value accordingly. ie y=sqrt(1-(x*x))
-// We then set x and y to be negative aprroximately %50 of the time to cover direction in 360 degrees
 void setFireworkDirectionVector(int i)
 {
     firework[i].xd = (float)((rand() % 1000) + 1) / 1000.0;
@@ -235,10 +230,6 @@ void initFirework()
         firework[i].radius = (float)(rand() % 15);
         setFireworkDirectionVector(i);
     }
-    // set fireowrk centre
-//    fireworkCenterX = rand() % (int)winWidth;
-//    fireworkCenterY = rand() % (int)winHeight;
-
     fr = (float)(rand() % 1000) / 1000.0;
     fg = (float)(rand() % 1000) / 1000.0;
     fb = (float)(rand() % 1000) / 1000.0;
@@ -250,10 +241,6 @@ void drawFireworkParticleShape(int i)
     glVertex2d(firework[i].x, firework[i].y);
     glVertex2d(firework[i].x + firework[i].xd * 1, firework[i].y + firework[i].yd * 1);
     glEnd();
-    //glBegin(GL_LINES);
-    //glVertex2d(firework[i].x, firework[i].y);
-    //glVertex2d(firework[i].x + firework[i].xd * 20, firework[i].y + firework[i].yd * 20);
-    //glEnd();
 }
 
 void drawFireParticle(int i)
@@ -284,51 +271,15 @@ void drawFirework()
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+//RAIN
 
 // define size of rain array
 #define RAINSIZE 500
 
 
-
-
-
-int scene = 1;
-
-
-// colours for the lamp
-
-float coloursArr[10][3] = {
-    {0.1, 0, 0},
-    {0.2, 0, 0},
-    {0.3, 0, 0},
-    {0.4, 0, 0},
-    {0.5, 0, 0},
-    {0.6, 0, 0},
-    {0.7, 0, 0},
-    {0.8, 0, 0},
-    {0.9, 0, 0},
-    {1.0, 0, 0}
-};
-
-
 float waveAngle = 0.0; float waveInc = 5.0;
 float rotAngle = 60;
 bool goingClockwise = false;
-
 
 int frame=0;
 
@@ -339,7 +290,6 @@ struct drop {
     float x = 400;
     float y = 400;
     float inc = 0.01;
-    //float r = 1; float g = 1;  float b = 1;
     float radius = 5;
     float scale = 1.0;
     float rotationAngle = 0;
@@ -349,7 +299,6 @@ struct drop {
 
 
 drop rain[RAINSIZE];
-
 
 
 void initRain()
@@ -401,8 +350,6 @@ void drawRain()
     }
 }
 
-
-
 void drawAquarium() {
 
     glColor3f (0.0, 0.0, 1.0);
@@ -428,6 +375,21 @@ void drawAquarium() {
     glEnd();
 
 }
+
+// colours for the lamp
+
+float coloursArr[10][3] = {
+    {0.1, 0, 0},
+    {0.2, 0, 0},
+    {0.3, 0, 0},
+    {0.4, 0, 0},
+    {0.5, 0, 0},
+    {0.6, 0, 0},
+    {0.7, 0, 0},
+    {0.8, 0, 0},
+    {0.9, 0, 0},
+    {1.0, 0, 0}
+};
 
 void drawLamp() {
 
@@ -617,7 +579,7 @@ void tween(wcPt2D source[20], wcPt2D destination[20], int numPoints, double prop
 
 
 
-// Fish var and functions
+// FISH
 
 
 // fish and mutated fish arrays
@@ -647,7 +609,6 @@ float fTranslateY = 0.0;
 
 int up = 1;
 int down = 0;
-
 
 
 void drawFish() {

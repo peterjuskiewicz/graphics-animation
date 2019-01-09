@@ -6,7 +6,7 @@ I've used GL_LINE_STRIP, GL_TRIANGLES, GL_LINES, GL_POLYGON to build shapes of h
 
 ## Movement
 
-To animate objects I've used glTranslatef, glRotatef methods encapsuled in glPushMatrix and glPopMatrix methods.
+To animate objects I've used glTranslatef, glRotatef methods encapsulated in glPushMatrix and glPopMatrix methods.
 
 
 ## Morphism
