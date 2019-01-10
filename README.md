@@ -11,11 +11,11 @@ To animate objects I've used glTranslatef, glRotatef methods encapsulated in glP
 
 ## Morphism
 
-To change the shape of object (fish) I've used array to define coordinates of fish before and after mutation and used tween method to gradualy morph the object.
+To change the shape of object (fish) I've used array to define coordinates of fish before and after mutation and used tween method to gradually morph the object.
 
 ## Scenes
 
-There are 4 scenes in the animation and the change of scenes is triggered by ceirtan events such as position of objects or counters
+There are 4 scenes in the animation and the change of scenes is triggered by certain events such as position of objects or counters
 
 ## Particle systems
 
