@@ -51,9 +51,8 @@ struct sprayParticle {
 
 sprayParticle spray[SPRAYSIZE];
 
-float angle = 360; // the angle of the spray: 0 degrees is to the left,
-// 90 degrees straight up, 180 to the right etc
-float sprayWidth = 4;// the width of the spray in degrees
+float angle = 360;
+float sprayWidth = 4;
 float sprayCenterX, sprayCenterY;
 
 
@@ -890,13 +889,6 @@ void init (void)
 
 }
 
-/*
- * Declare initial window size, position, and display mode
- * (single buffer and RGBA).  Open window with "hello"
- * in its title bar.  Call initialization routines.
- * Register callback function to display graphics.
- * Enter main loop and process events.
- */
 int main(int argc, char** argv)
 {
     srand(1);
@@ -914,7 +906,7 @@ int main(int argc, char** argv)
     glutVisibilityFunc(visibility);
 
     glutMainLoop();
-    return 0;   /* ANSI C requires main to return int. */
+    return 0;
 }
 
 
