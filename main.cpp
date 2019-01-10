@@ -899,7 +899,7 @@ int main(int argc, char** argv)
     glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGB);
     glutInitWindowSize (1300, 1000);
     glutInitWindowPosition (100, 100);
-    glutCreateWindow ("Merry Christmas!");
+    glutCreateWindow ("Fish food ad");
 
     init ();
     glutDisplayFunc(display);
